@@ -48,7 +48,6 @@ pub async fn run_setup_ap_and_webserver<'a>(
                 if let (Some(ssid), Some(pw)) =
                     (find_form_value(body, "ssid"), find_form_value(body, "pw"))
                 {
-                    defmt::info!("SSID: {}, Passwort: {}", ssid, pw);
                     flash.save_credentials_to_flash(ssid, pw).await;
                     let _ = socket.write_all(SUCCESS.as_bytes()).await;
                     socket.close();
@@ -57,6 +56,7 @@ pub async fn run_setup_ap_and_webserver<'a>(
                     // Hier die Rückgabe als heapless::String<64>
                     let ssid_str = heapless::String::<64>::from_str(ssid).unwrap_or_default();
                     let pw_str = heapless::String::<64>::from_str(pw).unwrap_or_default();
+                    control.close_ap().await;
                     return (ssid_str, pw_str);
                 }
             }
