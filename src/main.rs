@@ -3,20 +3,17 @@
 #![feature(type_alias_impl_trait)]
 
 pub mod alarm;
-pub mod credentials_webserver;
 pub mod credentials_flash;
+pub mod credentials_webserver;
 pub mod network;
 pub mod utils;
 
 use crate::alarm::Alarm;
 use crate::credentials_flash::CredentialsFlash;
-use defmt::expect;
 use embassy_executor::Spawner;
-use embassy_net::{Config, Stack, StackResources};
-use embassy_rp::flash::{Async, Blocking, Flash};
+use embassy_net::{Config, StackResources};
 use static_cell::StaticCell;
 
-use cyw43::{self, JoinOptions, State};
 use cyw43_pio::{DEFAULT_CLOCK_DIVIDER, PioSpi};
 use defmt::unwrap;
 use embassy_rp::bind_interrupts;
@@ -56,11 +53,6 @@ async fn net_task(mut runner: embassy_net::Runner<'static, cyw43::NetDriver<'sta
 }
 
 static RESOURCES: StaticCell<StackResources<2>> = StaticCell::new();
-
-enum WifiMode {
-    Setup,
-    Normal,
-}
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {

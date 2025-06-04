@@ -1,7 +1,5 @@
 use cyw43::Control;
 use embassy_net::{Stack, tcp::TcpSocket};
-use embassy_rp::flash::Flash;
-use embassy_rp::peripherals::FLASH;
 use embassy_time::{Duration, Timer};
 use embedded_io_async::Write;
 
@@ -15,8 +13,6 @@ const SUCCESS: &str = concat!(
     "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n",
     include_str!("../resources/wifi_setup_success.html")
 );
-const FLASH_OFFSET: u32 = 2 * 1024 * 1024 - 4096; // Letzte 4KB vom 2MB-Flash
-const FLASH_MAGIC: &[u8] = b"WIFICRED";
 
 use core::str::FromStr;
 

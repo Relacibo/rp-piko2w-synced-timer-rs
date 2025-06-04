@@ -1,6 +1,6 @@
 use core::net::Ipv4Addr;
 use embassy_net::{IpEndpoint, Stack};
-use embassy_time::{Duration, Timer, Instant};
+use embassy_time::{Duration, Instant, Timer};
 use heapless::Vec;
 
 use crate::alarm::Alarm;
@@ -170,6 +170,7 @@ pub async fn run_tcp_server(stack: Stack<'_>, alarm: &mut Alarm) {
 
         // Inaktive/verlorene Clients entfernen (Timeout)
         let now = Instant::now();
+        #[allow(clippy::needless_range_loop)]
         for i in 0..clients.len() {
             if let Some(last) = last_active[i] {
                 if now.duration_since(last).as_millis() > RECONNECT_TIMEOUT_MS {
