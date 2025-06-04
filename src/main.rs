@@ -4,12 +4,12 @@
 
 pub mod alarm;
 pub mod credentials_webserver;
-pub mod flash;
+pub mod credentials_flash;
 pub mod network;
 pub mod utils;
 
 use crate::alarm::Alarm;
-use crate::flash::{MyFlash, load_credentials_from_flash, reset_credentials_in_flash};
+use crate::credentials_flash::CredentialsFlash;
 use defmt::expect;
 use embassy_executor::Spawner;
 use embassy_net::{Config, Stack, StackResources};
@@ -107,10 +107,10 @@ async fn main(spawner: Spawner) {
     // Starte den Runner als Task!
     unwrap!(spawner.spawn(net_task(net_runner)));
 
-    let mut flash: MyFlash = Flash::new(p.FLASH, p.DMA_CH1);
+    let mut flash = CredentialsFlash::new(p.FLASH, p.DMA_CH1);
 
     // Credentials aus Flash laden
-    let creds = load_credentials_from_flash(&mut flash).await;
+    let creds = flash.load_credentials_from_flash().await;
 
     let (ssid, password) = if let Some(c) = creds {
         c
@@ -134,7 +134,7 @@ async fn main(spawner: Spawner) {
         Timer::after(Duration::from_secs(5)).await;
         if button.is_low() {
             // Button war 5 Sekunden gedrückt: Credentials löschen!
-            reset_credentials_in_flash(&mut flash).await;
+            flash.reset_credentials_in_flash().await;
             defmt::info!("WLAN-Credentials wurden zurückgesetzt!");
             // Optional: Neustart oder Setup-Modus aktivieren
         }

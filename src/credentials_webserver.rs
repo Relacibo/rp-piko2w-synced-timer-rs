@@ -5,7 +5,7 @@ use embassy_rp::peripherals::FLASH;
 use embassy_time::{Duration, Timer};
 use embedded_io_async::Write;
 
-use crate::flash::{MyFlash, save_credentials_to_flash};
+use crate::credentials_flash::CredentialsFlash;
 
 const PAYLOAD: &str = concat!(
     "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n",
@@ -23,7 +23,7 @@ use core::str::FromStr;
 pub async fn run_setup_ap_and_webserver<'a>(
     control: &mut Control<'_>,
     stack: Stack<'static>,
-    flash: &mut MyFlash<'a>,
+    flash: &mut CredentialsFlash<'a>,
 ) -> (heapless::String<64>, heapless::String<64>) {
     control.start_ap_open("Pico2W-Setup", 1).await;
 
@@ -53,9 +53,9 @@ pub async fn run_setup_ap_and_webserver<'a>(
                     (find_form_value(body, "ssid"), find_form_value(body, "pw"))
                 {
                     defmt::info!("SSID: {}, Passwort: {}", ssid, pw);
-                    save_credentials_to_flash(flash, ssid, pw).await;
+                    flash.save_credentials_to_flash(ssid, pw).await;
                     let _ = socket.write_all(SUCCESS.as_bytes()).await;
-                    let _ = socket.close();
+                    socket.close();
                     Timer::after(Duration::from_secs(2)).await;
 
                     // Hier die Rückgabe als heapless::String<64>
@@ -67,7 +67,7 @@ pub async fn run_setup_ap_and_webserver<'a>(
         } else {
             // Sende das Formular
             let _ = socket.write_all(PAYLOAD.as_bytes()).await;
-            let _ = socket.close();
+            socket.close();
         }
 
         Timer::after(Duration::from_millis(100)).await;
