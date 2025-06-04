@@ -87,7 +87,10 @@ async fn main(spawner: Spawner) {
 
     // embassy-net Stack initialisieren
     let config = Config::dhcpv4(Default::default());
-    let seed = 0x12345678; // oder z.B. aus Zufall/MAC-Adresse
+
+    // MAC-Adresse als Seed verwenden (liefert ein [u8; 6])
+    let mac = control.address().await;
+    let seed = u64::from_le_bytes([mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], 0, 0]);
 
     let (stack, net_runner) = embassy_net::new(
         net_device,
